@@ -38,6 +38,13 @@
 #define FLAG_ENCRYPTED 4096
 #define FLAG_PENDING 8192
 
+
+#define FLAG_DOCUMENT_IMAGE 1
+#define FLAG_DOCUMENT_STICKER 2
+#define FLAG_DOCUMENT_ANIMATED 4
+#define FLAG_DOCUMENT_AUDIO 8
+#define FLAG_DOCUMENT_VIDEO 16
+
 #pragma pack(push,4)
 
 typedef struct { int type; int id; } tgl_peer_id_t;
@@ -392,6 +399,11 @@ struct tgl_document {
   struct tgl_photo_size thumb;
   char *caption;
   char *mime_type;
+
+  int w;
+  int h;
+  int flags;
+  int duration;
 };
 
 struct tgl_message_action {

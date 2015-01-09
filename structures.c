@@ -641,19 +641,64 @@ void tglf_fetch_audio (struct tgl_state *TLS, struct tgl_audio *V) {
   V->dc_id = fetch_int ();
 }
 
+void tglf_fetch_document_attribute (struct tgl_state *TLS, struct tgl_document *V) {
+  unsigned x = tl_fetch_int ();
+  switch (x) {
+  case CODE_document_attribute_image_size:
+    V->flags |= FLAG_DOCUMENT_IMAGE;
+    V->w = fetch_int ();
+    V->h = fetch_int ();
+    return;
+  case CODE_document_attribute_animated:
+    V->flags |= FLAG_DOCUMENT_ANIMATED;
+    return;
+  case CODE_document_attribute_sticker;
+    V->flags |= FLAG_DOCUMENT_STICKER;
+    return;
+  case CODE_document_attribute_video;
+    V->flags |= FLAG_DOCUMENT_VIDEO;
+    V->duration = fetch_int ();
+    V->w = fetch_int ();
+    V->h = fetch_int ();
+    return;
+  case CODE_document_attribute_audio;
+    V->flags |= FLAG_DOCUMENT_AUDIO;
+    V->duration = fetch_int ();
+    return;
+  }
+}
+
 void tglf_fetch_document (struct tgl_state *TLS, struct tgl_document *V) {
   memset (V, 0, sizeof (*V));
   unsigned x = fetch_int ();
   V->id = fetch_long ();
   if (x == CODE_document_empty) { return; }
-  V->access_hash = fetch_long ();
-  V->user_id = fetch_int ();
-  V->date = fetch_int ();
-  V->caption = fetch_str_dup ();
-  V->mime_type = fetch_str_dup ();
-  V->size = fetch_int ();
-  tglf_fetch_photo_size (TLS, &V->thumb);
-  V->dc_id = fetch_int ();
+  if (x == CODE_document_l19) {
+    V->access_hash = fetch_long ();
+    V->user_id = fetch_int ();
+    V->date = fetch_int ();
+    V->caption = fetch_str_dup ();
+    V->mime_type = fetch_str_dup ();
+    V->size = fetch_int ();
+    tglf_fetch_photo_size (TLS, &V->thumb);
+    V->dc_id = fetch_int ();
+  } else {
+    V->access_hash = fetch_long ();
+    V->date = fetch_int ();
+    V->mime_type = fetch_str_dup ();
+    V->size = fetch_int ();
+    tglf_fetch_photo_size (TLS, &V->thumb);
+    V->dc_id = fetch_int ();
+
+    assert (fetch_int () == CODE_vector);
+    int num = fetch_int ();
+    int i;
+    for (i = 0; i < num; i++) {
+      tglf_fetch_document_attribute (TLS, V);
+    }
+
+    assert (0);
+  }
 }
 
 void tglf_fetch_message_action (struct tgl_state *TLS, struct tgl_message_action *M) {
